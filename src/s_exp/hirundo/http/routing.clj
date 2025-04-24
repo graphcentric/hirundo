@@ -37,9 +37,9 @@
         (into-array Handler
                     [(reify Handler
                        (handle [_ server-request server-response]
-                         (->> (request/ring2-request server-request server-response)
-                              handler
-                              (response/set-response-2! server-response))))]))))))
+                         (some->> (request/ring2-request server-request server-response)
+                                  handler
+                                  (response/set-response-2! server-response))))]))))))
 
 (defmethod options/set-server-option! :ring2/http-handler
   [^WebServerConfig$Builder builder _ handler options]
