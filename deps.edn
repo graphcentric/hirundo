@@ -18,6 +18,7 @@
         io.helidon.webserver/helidon-webserver {:mvn/version "4.2.0"}
         io.helidon.webserver/helidon-webserver-websocket {:mvn/version "4.2.0"}
         io.helidon.webserver/helidon-webserver-http2 {:mvn/version "4.2.0"}
+        io.helidon.webserver/helidon-webserver-sse {:mvn/version "4.2.0"}
         org.ring-clojure/ring-core-protocols {:mvn/version "1.13.0"}}
 
  :aliases
