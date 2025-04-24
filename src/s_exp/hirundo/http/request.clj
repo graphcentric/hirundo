@@ -1,9 +1,10 @@
 (ns s-exp.hirundo.http.request
-  (:require [clojure.string :as str])
-  (:import (clojure.lang PersistentHashMap)
-           (io.helidon.common.uri UriQuery UriPath)
-           (io.helidon.http HttpPrologue Headers Header)
-           (io.helidon.webserver.http ServerRequest ServerResponse)))
+  (:require
+   [clojure.string :as str])
+  (:import
+   (io.helidon.common.uri UriPath UriQuery)
+   (io.helidon.http Header Headers HttpPrologue)
+   (io.helidon.webserver.http ServerRequest ServerResponse)))
 
 (set! *warn-on-reflection* true)
 
@@ -70,5 +71,32 @@
         ring-request (cond-> ring-request
                        qs (assoc! :query-string (ring-query (.query server-request)))
                        body (assoc! :body body))]
+
+    (persistent! ring-request)))
+
+(defn ring2-request
+  [^ServerRequest server-request
+   ^ServerResponse server-response]
+  (let [qs (ring-query (.query server-request))
+        body (let [content (.content server-request)]
+               (when-not (.consumed content) (.inputStream content)))
+
+        ring-request (transient
+                      {:ring.request/server-port (.port (.localPeer server-request))
+                       :ring.request/server-name (.host (.localPeer server-request))
+                       :ring.request/remote-addr (let [address ^java.net.InetSocketAddress (.address (.remotePeer server-request))]
+                                      (-> address .getAddress .getHostAddress))
+                       :ring.request/ssl-client-cert (some-> server-request .remotePeer .tlsCertificates (.orElse nil) first)
+                       :ring.request/path (ring-path (.path server-request))
+                       :ring.request/scheme (if (.isSecure server-request) :https :http)
+                       :ring.request/protocol (ring-protocol (.prologue server-request))
+                       :ring.request/method (ring-method (.prologue server-request))
+                       :ring.request/headers (ring-headers (.headers server-request))
+                       ::server-request server-request
+                       ::server-response server-response})
+
+        ring-request (cond-> ring-request
+                       qs (assoc! :ring.request/query (ring-query (.query server-request)))
+                       body (assoc! :ring.request/body body))]
 
     (persistent! ring-request)))

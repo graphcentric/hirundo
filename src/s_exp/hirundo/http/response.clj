@@ -1,10 +1,10 @@
 (ns s-exp.hirundo.http.response
-  (:require [ring.core.protocols :as rp])
-  (:import (io.helidon.http HeaderNames
-                            HeaderName
-                            Status)
-           (io.helidon.webserver.http ServerResponse)
-           (java.io FileInputStream InputStream OutputStream)))
+  (:require
+   [ring.core.protocols :as rp])
+  (:import
+   (io.helidon.http HeaderName HeaderNames Status)
+   (io.helidon.webserver.http ServerResponse)
+   (java.io FileInputStream InputStream OutputStream)))
 
 (set! *warn-on-reflection* true)
 
@@ -64,6 +64,12 @@
 
 (defn set-response!
   [^ServerResponse server-response {:keys [body headers status]}]
+  (set-headers! server-response headers)
+  (set-status! server-response status)
+  (write-body! body server-response))
+
+(defn set-response-2!
+  [^ServerResponse server-response {:ring.response/keys [body headers status]}]
   (set-headers! server-response headers)
   (set-status! server-response status)
   (write-body! body server-response))
